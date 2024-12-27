@@ -60,6 +60,7 @@ log_file = []       # ログファイル用
 url = ''            # 引数で指定されたURL
 filename = ''       # 作品タイトルから作成した保存ファイル名
 pchapt = ''         # 章タイトル保存用
+startn = 0          # DL開始番号
 
 
 # HTMLファイルのダウンロード
@@ -228,13 +229,14 @@ def parsetoppage(body: str) -> int:
         page_list.append(purl)
         # title_list.append(epsd) エピソードタイトルは各ページから取り出すので使わない
         ep = re.search('"__typename":"Episode","id":".*?","title":".*?",', body)
-    # 保存ファイル名・ログファイル・DLテキストを構成する
-    filename = pathfilter(title)
-    if stat == '【完結】':
-        if filename.find('完結') == -1:
+    # ファイル名が指定されていなければ、ファイル名・ログファイル・DLテキストを構成する
+    if filename == '':
+        filename = pathfilter(title) + '.txt'
+        if stat == '【完結】':
+            if filename.find('完結') == -1:
+                filename = stat + filename
+        else:
             filename = stat + filename
-    else:
-        filename = stat + filename
 
     log_file.append('小説URL :' + url + '\r\n')
     log_file.append('タイトル:' + title + '\r\n')
@@ -307,6 +309,9 @@ def loadeachpage() -> int:
     i = 0
     for purl in page_list:
         i += 1
+        # DL開始番号が指定されていたら開始番号までスキップする
+        if i < startn:
+            continue
         page = loadfromhtml(purl)
         sys.stdout.write('\r各話を取得中 [ ' + str(i) + '/ ' + str(n) + ']')
         if page != '':
@@ -317,18 +322,31 @@ def loadeachpage() -> int:
                 return -1
         # サーバー側に負担をかけないよう0.5秒の待ち時間を入れる
         time.sleep(0.5)
-    print(' ... ' + str(i) + ' 話のエピソードを取得しました.')
+    if startn > 0:
+        n = startn - 1
+    else:
+        n = 0
+    print(' ... ' + str(i - n) + ' 話のエピソードを取得しました.')
     return 0
 
 def main():
-    global url
+    global url, filename, startn
 
     if len(sys.argv) == 1:
         print('kakudlpy ver1.0 2024/12/27 (c) INOUE, masahiro')
         print('使用方法')
-        print('  python kakudlpy.py カクヨム作品トップページURL')
+        print('  python kakudlpy.py [-sDL開始ページ番号] 小説トップページのURL [保存するファイル名(省略するとタイトル名で保存します)]')
         quit()
-    url = sys.argv[1]
+    for arg in sys.argv[1:]:
+        if re.match('https://', arg):
+            url = arg
+        elif re.match('-s', arg):
+            startn = int(arg[2:])
+        else:
+            filename = arg
+    if not re.match(r'https://kakuyomu.jp/works/\d{19,20}', url):
+        print('カクヨム作品トップページURLを指定して下さい.')
+        quit()
 
     toppage = loadfromhtml(url)
     if toppage == '':
@@ -339,7 +357,7 @@ def main():
         print(str(len(page_list)) + ' 話の目次情報を取得しました.')
         if loadeachpage() == 0:
             # テキストファイルを保存する
-            fout = codecs.open(filename + '.txt', 'w', 'utf8')
+            fout = codecs.open(filename, 'w', 'utf8')
             fout.writelines(text_page)
             fout.close()
             print(filename + ' に保存しました.')

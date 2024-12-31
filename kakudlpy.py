@@ -2,6 +2,7 @@
 #
 # カクヨムテキストダウンローダー kakuyomudlpy.py
 #
+# ver1.2  2025/01/01 pathfilterの処理を正規表現の流儀に書き換えた
 # ver1.1  2024/12/28 オプションスイッチ(DL開始番号、保存ファイル名指定)を追加した
 # ver1.0  2024/12/27 Pythonで一から書き直した
 #                    ・正規表現処理を前提
@@ -140,19 +141,7 @@ def changeimages(base: str) -> str:
 # タイトル名をファイル名として使用出来るかどうかチェックし、使用不可文字が
 # あれば修正する('-'に置き換える)
 def pathfilter(title: str) -> str:
-    title = title.replace('\\', '-')
-    title = title.replace('/', '-')
-    title = title.replace(';', '-')
-    title = title.replace(':', '-')
-    title = title.replace('*', '-')
-    title = title.replace('?', '-')
-    title = title.replace('+', '-')
-    title = title.replace('<', '-')
-    title = title.replace('>', '-')
-    title = title.replace('|', '-')
-    title = title.replace('.', '-')
-    title = title.replace('\t', '-')
-    title = title.replace(' ', '-')
+    title = re.sub('[\\/:;\*\?\+,.|\.\t ]', '-', title)
     if len(title) > 24:
         title = title[:24]
     return title

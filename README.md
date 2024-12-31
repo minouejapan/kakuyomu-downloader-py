@@ -4,7 +4,7 @@ kakuyomudlをPythonで一から書き直してみました
 # 動作環境
 Windows10/11上のコマンドプロンプト上で動作します。
 
-尚、Windows上のWSL2ターミナルでも動作しますので、Linuxでも動くかもしれません。
+尚、Windows上のWSL2/ubuntuとVMWare上のLinux/Q4OSでも動作することを確認しています。
 
 # 使い方
 コマンドプロンプトから

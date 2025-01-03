@@ -10,7 +10,6 @@
 #
 #-------------------------------------------------------------------------------
 import sys
-#import requests
 import codecs
 import urllib.request
 import html

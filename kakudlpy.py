@@ -140,7 +140,7 @@ def changeimages(base: str) -> str:
 # タイトル名をファイル名として使用出来るかどうかチェックし、使用不可文字が
 # あれば修正する('-'に置き換える)
 def pathfilter(title: str) -> str:
-    title = re.sub('[\\/:;\*\?\+,.|\.\t ]', '-', title)
+    title = re.sub('[\\/:;*?+,.|.\t ]', '-', title)
     if len(title) > 24:
         title = title[:24]
     return title

@@ -2,6 +2,7 @@
 #
 # カクヨムテキストダウンローダー kakuyomudlpy.py
 #
+# ver1.3  2025/03/07 pathfilterにkrつらくしていた<>'を追加した
 # ver1.2  2025/01/01 pathfilterの処理を正規表現の流儀に書き換えた
 # ver1.1  2024/12/28 オプションスイッチ(DL開始番号、保存ファイル名指定)を追加した
 # ver1.0  2024/12/27 Pythonで一から書き直した
@@ -322,7 +323,7 @@ def main():
     global url, filename, startn
 
     if len(sys.argv) == 1:
-        print('kakudlpy ver1.0 2024/12/27 (c) INOUE, masahiro')
+        print('kakudlpy ver1.3 2025/3/7 (c) INOUE, masahiro')
         print('使用方法')
         print('  python kakudlpy.py [-sDL開始ページ番号] 小説トップページのURL [保存するファイル名(省略するとタイトル名で保存します)]')
         quit()

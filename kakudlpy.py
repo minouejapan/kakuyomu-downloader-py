@@ -2,9 +2,9 @@
 #
 # カクヨムテキストダウンローダー kakuyomudlpy.py
 #
-# ver1.3  2025/03/07 pathfilterにkrつらくしていた<>'を追加した
+# ver1.3  2025/08/04 HTMLエンコード文字のデコードはhtml.unencodeで一発でした
 # ver1.2  2025/01/01 pathfilterの処理を正規表現の流儀に書き換えた
-# ver1.1  2024/12/28 オプションスイッチ(DL開始番号、保存ファイル名指定)を追加した
+# ver1.1  2024/12/28 オプションスイッチ(DL開始番号保存ファイル名指定)を追加した
 # ver1.0  2024/12/27 Pythonで一から書き直した
 #                    ・正規表現処理を前提
 #                    ・識別タグは定数宣言ではなくその場埋め込み(見晴らし優先)
@@ -44,8 +44,8 @@ AO_SM1 = '」に傍点］'        # ルビ傍点
 AO_SM2 = '」に丸傍点］'      # ルビ傍点 どちらもsesami_dotで扱う
 AO_EMB = '［＃丸傍点］'      # 横転開始
 AO_EME = '［＃丸傍点終わり］'       # 傍点終わり
-AO_KKL = '［＃ここから罫囲み］'     # 本来は罫囲み範囲の指定だが、前書きや後書き等を
-AO_KKR = '［＃ここで罫囲み終わり］' # 一段小さい文字で表記するために使用する
+AO_KKL = '［＃ここから罫囲み］'     # 本来は罫囲み範囲の指定だが前書きや後書き
+AO_KKR = '［＃ここで罫囲み終わり］' # 等を一段小さい文字で表記するために使用する
 AO_END = '底本：'            # ページフッダ開始（必ずあるとは限らない）
 AO_PIB = '［＃リンクの図（'  # 画像埋め込み
 AO_PIE = '）入る］'          # 画像埋め込み終わり
@@ -110,27 +110,9 @@ def changerubys(base: str) -> str:
     base = base.replace('</span>', AO_EME)
     return base
 
-# HTML特殊文字の処理
-# 1)エスケープ文字列 → 実際の文字
-# 2)&#x???? → 通常の文字
+# HTML特殊文字 → 実際の文字
 def restore2realchar(base: str) -> str:
-    # エスケープされた文字
-    base = base.replace('&lt',      '<')
-    base = base.replace('&gt',      '>')
-    base = base.replace('&quot',    '')
-    base = base.replace('&nbsp',    ' ')
-    base = base.replace('&yen',     '\\')
-    base = base.replace('&brvbar',  '|')
-    base = base.replace('&copy',    '©')
-    base = base.replace('&amp',     '&')
-    # &#????にエンコードされた文字をデコードする
-    en = re.search(r'&#.*?;', base)
-    while en:
-        ch = en.group(0)
-        de = html.unescape(ch)     # &#????;を文字に戻す
-        re.sub(ch, de, base)
-        en = re.search(r'&#.*?;', base)
-    return base
+    return html.unescape(base)
 
 # 埋め込まれた画像リンクを青空文庫形式に変換する
 def changeimages(base: str) -> str:
@@ -141,7 +123,7 @@ def changeimages(base: str) -> str:
 # タイトル名をファイル名として使用出来るかどうかチェックし、使用不可文字が
 # あれば修正する('-'に置き換える)
 def pathfilter(title: str) -> str:
-    title = re.sub('[\\/:;*?+,.|<>''\t ]', '-', title)    #<>'が抜けていたため追加(2025/3/7)
+    title = re.sub('[\\*?+.\t/:;,.| ]', '-', title)
     if len(title) > 24:
         title = title[:24]
     return title
@@ -323,7 +305,7 @@ def main():
     global url, filename, startn
 
     if len(sys.argv) == 1:
-        print('kakudlpy ver1.3 2025/3/7 (c) INOUE, masahiro')
+        print('kakudlpy ver1.3 2025/8/4 (c) INOUE, masahiro')
         print('使用方法')
         print('  python kakudlpy.py [-sDL開始ページ番号] 小説トップページのURL [保存するファイル名(省略するとタイトル名で保存します)]')
         quit()
